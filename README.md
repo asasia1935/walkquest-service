@@ -49,8 +49,8 @@ MVP에서 다룰 예정인 범위는 다음과 같습니다.
 
 - Language: Go
 - HTTP: 현재 `net/http` 사용, 추후 Gin 전환 예정
-- Database: PostgreSQL 예정
-- Infra: Docker Compose 예정
+- Database: PostgreSQL
+- Infra: Docker Compose
 - Auth Boundary: Gateway-provided `X-User-Id` 연동 예정
 - Async Integration: 추후 Async Platform과 이벤트 연동 예정
 
@@ -61,9 +61,17 @@ MVP에서 다룰 예정인 범위는 다음과 같습니다.
 - 프로젝트 기본 구조 생성
 - `/health` API 구현
 - `PORT` 환경변수 기반 서버 실행 설정
+- PostgreSQL Docker Compose 구성
+- 서버 시작 시 DB ping 확인
 - 로컬 실행 및 health check 확인
 
 ## 실행 방법
+
+PostgreSQL을 실행합니다.
+
+```bash
+docker-compose up -d
+```
 
 서버를 실행합니다.
 
@@ -72,6 +80,8 @@ go run ./cmd/server
 ```
 
 서버는 기본적으로 `8080` 포트에서 실행됩니다.
+
+서버 시작 시 PostgreSQL ping을 확인하고, 성공하면 로그를 남깁니다.
 
 다른 포트를 사용하려면 `PORT` 환경변수를 설정합니다. 이후 아래와 같이 실행합니다.
 
@@ -99,6 +109,15 @@ curl.exe http://localhost:8080/health
   "service": "walkquest-service"
 }
 ```
+
+## 환경변수 설정
+
+애플리케이션은 실행 시 OS 환경변수를 읽고, 값이 없으면 코드에 정의된 기본값을 사용합니다.
+
+현재 `.env` 파일은 자동으로 로드하지 않습니다.  
+`.env.example`은 자동 로딩되는 설정 파일이 아니라, 사용할 수 있는 환경변수 목록을 보여주는 예시 파일입니다.
+
+기본 DB 설정은 로컬 개발용 Docker Compose 설정과 일치하도록 구성되어 있습니다.
 
 ## 관련 문서
 
