@@ -11,8 +11,8 @@ import (
 )
 
 func Open(cfg config.DatabaseConfig) (*sql.DB, error) {
-	// sql.OpenÀº ½ÇÁ¦ DB ¿¬°áÀ» Áï½Ã ¼öÇàÇÏÁö ¾Ê°í,
-	// DB ¿¬°á Ç®À» »ç¿ëÇÒ ÁØºñ¸¸ ÇÕ´Ï´Ù.
+	// sql.Openì€ ì‹¤ì œ DB ì—°ê²°ì„ ì¦‰ì‹œ ìˆ˜í–‰í•˜ì§€ ì•Šê³ ,
+	// DB ì—°ê²° í’€ì„ ì‚¬ìš©í•  ì¤€ë¹„ë§Œ í•©ë‹ˆë‹¤.
 	database, err := sql.Open("postgres", dataSourceName(cfg))
 	if err != nil {
 		return nil, err
@@ -22,7 +22,7 @@ func Open(cfg config.DatabaseConfig) (*sql.DB, error) {
 }
 
 func Ping(ctx context.Context, database *sql.DB) error {
-	// PingContext·Î ½ÇÁ¦ DB ¿¬°á °¡´É ¿©ºÎ¸¦ È®ÀÎÇÕ´Ï´Ù.
+	// PingContextë¡œ ì‹¤ì œ DB ì—°ê²° ê°€ëŠ¥ ì—¬ë¶€ë¥¼ í™•ì¸í•©ë‹ˆë‹¤.
 	return database.PingContext(ctx)
 }
 

@@ -32,8 +32,8 @@ func Load() Config {
 	}
 }
 
-// envOrDefault�� OS ȯ�溯���� �а�, ���� ������ �⺻���� ��ȯ�մϴ�.
-// (�� �Լ��� .env ������ �д� ���� �ƴ� PowerShell, �͹̳�, Docker, ���� ȯ�� ��� OS ȯ�溯���� ���� �����ؾ� �մϴ�.)
+// envOrDefault는 OS 환경변수를 읽고, 값이 없으면 기본값을 반환합니다.
+// (이 함수는 .env 파일을 읽는 것이 아닌 PowerShell, 터미널, Docker, 배포 환경 등에서 OS 환경변수로 직접 설정해야 합니다.)
 func envOrDefault(key, fallback string) string {
 	value := os.Getenv(key)
 	if value == "" {

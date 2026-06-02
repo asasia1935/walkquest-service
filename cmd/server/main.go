@@ -20,7 +20,7 @@ func main() {
 	}
 	defer database.Close()
 
-	// timeoutÀ» °É¾î DB°¡ ÀÀ´äÇÏÁö ¾ÊÀ» ¶§ ¼­¹ö ½ÃÀÛÀÌ ¿À·¡ ¸ØÃßÁö ¾Êµµ·Ï ÇÕ´Ï´Ù.
+	// timeoutì„ ê±¸ì–´ DBê°€ ì‘ë‹µí•˜ì§€ ì•Šì„ ë•Œ ì„œë²„ ì‹œì‘ì´ ì˜¤ë˜ ë©ˆì¶”ì§€ ì•Šë„ë¡ í•©ë‹ˆë‹¤.
 	pingCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
