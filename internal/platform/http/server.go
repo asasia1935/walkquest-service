@@ -10,9 +10,11 @@ type healthResponse struct {
 	Service string `json:"service"`
 }
 
-func NewHandler() nethttp.Handler {
+func NewHandler(explorerProfileHandler *ExplorerProfileHandler) nethttp.Handler {
 	mux := nethttp.NewServeMux()
 	mux.HandleFunc("GET /health", healthHandler)
+	mux.HandleFunc("POST /explorer-profiles", explorerProfileHandler.CreateProfile)
+	mux.HandleFunc("GET /explorer-profiles/me", explorerProfileHandler.GetMyProfile)
 
 	return mux
 }

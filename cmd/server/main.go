@@ -8,6 +8,7 @@ import (
 
 	"github.com/asasia1935/walkquest-service/internal/config"
 	"github.com/asasia1935/walkquest-service/internal/db"
+	"github.com/asasia1935/walkquest-service/internal/explorer"
 	platformhttp "github.com/asasia1935/walkquest-service/internal/platform/http"
 )
 
@@ -29,7 +30,11 @@ func main() {
 	}
 	log.Print("database ping succeeded")
 
-	handler := platformhttp.NewHandler()
+	explorerRepository := explorer.NewRepository(database)
+	explorerService := explorer.NewService(explorerRepository)
+	explorerProfileHandler := platformhttp.NewExplorerProfileHandler(explorerService)
+
+	handler := platformhttp.NewHandler(explorerProfileHandler)
 
 	addr := ":" + cfg.Port
 	log.Printf("walkquest-service listening on %s", addr)
