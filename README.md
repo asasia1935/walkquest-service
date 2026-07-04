@@ -127,3 +127,159 @@ curl.exe http://localhost:8080/health
 - `docs/api.md`: API 명세
 - `docs/adr/`: 주요 설계 결정
 - `docs/policies.md`: 세션, GPS, 탐험 판정 정책
+- `docs/auth-boundary.md`: 인증 경계와 `X-User-Id` 신뢰 모델
+
+## ExplorerProfile 로컬 실행 및 검증
+
+이 섹션은 현재 ExplorerProfile 2주차 구현 상태를 로컬에서 실행하고 검증하는 방법을 정리한다.
+
+### 1. PostgreSQL 실행
+
+```bash
+docker compose up -d
+```
+
+### 2. 컨테이너 상태 확인
+
+```bash
+docker compose ps
+```
+
+### 3. migration 적용
+
+```bash
+docker compose exec -T postgres psql -U walkquest -d walkquest < migrations/001_create_explorer_profiles.sql
+```
+
+이 명령은 현재 실행 중인 `postgres` 컨테이너에 migration SQL 파일을 전달해 실행한다. 이미 같은 migration을 적용한 상태에서 다시 실행하면 테이블이 이미 존재한다는 오류가 발생할 수 있다.
+
+현재는 별도의 migration 관리 도구 없이 SQL 파일을 수동 적용한다.
+
+### 4. DB 콘솔 접속
+
+```bash
+docker compose exec postgres psql -U walkquest -d walkquest
+```
+
+대표적인 확인 명령은 다음과 같다.
+
+```sql
+\dt
+\d explorer_profiles
+SELECT * FROM explorer_profiles;
+\q
+```
+
+### 5. 서버 실행
+
+기본 실행 명령은 다음과 같다.
+
+```bash
+go run ./cmd/server
+```
+
+기본 포트는 `8080`이다.
+
+기본 포트를 사용할 수 없는 경우에만 환경변수로 임시 포트를 지정한다.
+
+PowerShell:
+
+```powershell
+$env:PORT="18080"
+go run ./cmd/server
+```
+
+Git Bash:
+
+```bash
+PORT=18080 go run ./cmd/server
+```
+
+임시 포트를 사용했다면 아래 API URL의 `8080` 부분도 같은 포트로 바꿔야 한다. 예를 들어 `PORT=18080`을 사용했다면 API URL은 `http://localhost:18080`을 사용한다.
+
+### 6. PowerShell의 curl 사용 주의
+
+Windows PowerShell에서 `curl`은 환경에 따라 `Invoke-WebRequest` 별칭으로 동작할 수 있다. README의 검증 명령은 `curl.exe` 기준으로 작성한다.
+
+Git Bash나 일반 터미널에서는 환경에 따라 `curl`을 사용할 수 있다.
+
+### 7. API 수동 검증
+
+아래 예시는 기본 포트인 `8080` 기준이다.
+
+#### Health check
+
+```powershell
+curl.exe -i http://localhost:8080/health
+```
+
+기대 결과:
+
+- `200 OK`
+
+#### X-User-Id 없이 프로필 생성
+
+```powershell
+curl.exe -i -X POST http://localhost:8080/explorer-profiles
+```
+
+기대 결과:
+
+- `401 Unauthorized`
+- `{"error":"unauthorized"}`
+
+#### 프로필 생성 성공
+
+```powershell
+curl.exe -i -X POST http://localhost:8080/explorer-profiles -H "X-User-Id: user-123"
+```
+
+기대 결과:
+
+- `201 Created`
+- 생성된 프로필 JSON 반환
+
+#### 내 프로필 조회 성공
+
+```powershell
+curl.exe -i http://localhost:8080/explorer-profiles/me -H "X-User-Id: user-123"
+```
+
+기대 결과:
+
+- `200 OK`
+- 프로필 JSON 반환
+
+#### 동일 사용자 프로필 중복 생성
+
+```powershell
+curl.exe -i -X POST http://localhost:8080/explorer-profiles -H "X-User-Id: user-123"
+```
+
+기대 결과:
+
+- `409 Conflict`
+- `{"error":"explorer_profile_already_exists"}`
+
+#### 존재하지 않는 사용자 프로필 조회
+
+```powershell
+curl.exe -i http://localhost:8080/explorer-profiles/me -H "X-User-Id: user-not-exists"
+```
+
+기대 결과:
+
+- `404 Not Found`
+- `{"error":"explorer_profile_not_found"}`
+
+### 8. 자동 테스트 실행
+
+```bash
+go test ./...
+```
+
+Service 테스트는 fake repository를 사용해 repository 함수 호출, `userID` 전달, 프로필 반환, 도메인 에러 전달을 검증한다.
+
+Handler 테스트는 fake service와 `httptest`를 사용해 HTTP 상태 코드, JSON 응답, 라우팅, service 호출을 검증한다.
+
+현재 Repository의 실제 PostgreSQL 동작은 수동 통합 검증으로 확인했다. 이번 2주차 범위에서는 별도의 Repository 자동 통합 테스트나 test container는 추가하지 않았다.
